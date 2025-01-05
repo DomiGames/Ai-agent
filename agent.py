@@ -2,6 +2,7 @@ import speech_recognition as sr
 import pyttsx3
 import subprocess
 
+ACTIVATION_NAME = "Jarvis"
 
 class AI_Agent:
     def __init__(self, model="TinyLLaMa"):
@@ -15,24 +16,37 @@ class AI_Agent:
         """Configure the voice settings for the text-to-speech engine."""
         voices = self.engine.getProperty("voices")
         for voice in voices:
-            if "female" in voice.name.lower() or "Heera" in voice.name.lower():
+            if "female" in voice.name.lower() or "zira" in voice.name.lower():
                 self.engine.setProperty("voice", voice.id)
                 break
         self.engine.setProperty("rate", 150)  # Adjust the speech rate (lower is slower)
 
     def listen(self):
-        """Capture voice input and convert it to text."""
-        with sr.Microphone() as source:
-            print("Listening...")
-            try:
-                audio = self.recognizer.listen(source)
-                return self.recognizer.recognize_google(audio)
-            except sr.UnknownValueError:
-                print("Sorry, I didn't catch that.")
-                return "Sorry, I didn't catch that."
-            except sr.RequestError:
-                print("Speech recognition service is unavailable.")
-                return "Speech recognition service is unavailable."
+
+        userInputOption = input(f"Use mic? (yes/no): ").strip().lower()
+
+        if userInputOption == "yes":
+            """Capture voice input and convert it to text."""
+            with sr.Microphone() as source:
+                print("Listening...")
+                try:
+                    audio = self.recognizer.listen(source)
+                    text = self.recognizer.recognize_google(audio).lower()
+
+                    if ACTIVATION_NAME.lower() in text:
+                        return text.replace(ACTIVATION_NAME.lower(), "").strip()
+                    else:
+                        print("Activation name not detected.")
+                        return None
+                except sr.UnknownValueError:
+                    print("Sorry, I didn't catch that.")
+                    return "Sorry, I didn't catch that."
+                except sr.RequestError:
+                    print("Speech recognition service is unavailable.")
+                    return "Speech recognition service is unavailable."
+        else:
+            keyboardInput = input(f"Type your chat i'm listening: ")
+            return keyboardInput
 
     def speak(self, text):
         """Convert text to speech."""
